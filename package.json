@@ -1,0 +1,18 @@
+{
+  "name": "meetflow-meeting-analysis",
+  "version": "2.0.0",
+  "description": "Browser verification tools for AI-Powered Meeting Analysis & Task Automation",
+  "private": true,
+  "scripts": {
+    "test:browser": "node tests/workspace-browser.mjs",
+    "check": "node --check static/workspace.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "playwright": "^1.58.0",
+    "prettier": "^3.9.9"
+  }
+}

@@ -1,0 +1,5 @@
+-r requirements.txt
+faster-whisper>=1.1,<2
+# PyAV 19 removed metadata_errors, still used by faster-Whisper 1.2.
+av>=14,<17
+pyannote.audio>=4,<5

@@ -1,0 +1,16 @@
+"""Fail safely if the real key appears in served assets or project source."""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from app.config import ROOT, settings
+
+secret = settings.groq_api_key.encode()
+if not secret:
+    raise SystemExit('No configured key to check.')
+files = [path for folder in ['app', 'static', 'scripts', 'tests'] for path in (ROOT / folder).rglob('*')
+         if path.is_file() and '__pycache__' not in path.parts and path.suffix in {'.py','.js','.mjs','.html','.css','.svg','.ps1'}]
+files += [ROOT / name for name in ['.env.example','README.md','API_KEYS.md','PROJECT_NOTES.md','package.json','package-lock.json']]
+exposed = sum(secret in path.read_bytes() for path in files)
+if exposed:
+    raise SystemExit(f'Secret exposure check failed in {exposed} files. Values withheld.')
+print(f'Secret exposure check passed across {len(files)} source, asset and documentation files.')
