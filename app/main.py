@@ -34,4 +34,9 @@ app.mount('/static', StaticFiles(directory=STATIC_ROOT), name='static')
 
 @app.get('/')
 def index():
+    return FileResponse(STATIC_ROOT / 'landing.html')
+
+
+@app.get('/app')
+def workspace():
     return FileResponse(STATIC_ROOT / 'index.html')

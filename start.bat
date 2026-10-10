@@ -6,6 +6,10 @@ if not exist ".venv\Scripts\python.exe" (
   exit /b 1
 )
 if not exist ".env" copy ".env.example" ".env" >nul
-echo Meeting Analysis is available at http://127.0.0.1:8000
-echo Press Ctrl+C to stop the server.
+echo Starting MeetFlow...
 ".venv\Scripts\python.exe" run.py
+if errorlevel 1 (
+  echo The website could not start. Check the error above.
+  pause
+  exit /b 1
+)

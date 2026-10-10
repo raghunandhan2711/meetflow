@@ -65,7 +65,7 @@ try {
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto(base);
+  await page.goto(base + '/app');
   await page.getByText("Ready for your first meeting.").waitFor();
   assert.match(await page.title(), /AI-Powered Meeting Analysis/);
   assert.equal(await page.locator('[data-nav="settings"]').count(), 0);
@@ -249,6 +249,8 @@ try {
     path: "artifacts/15-mobile-analysis.png",
     fullPage: true,
   });
+  const taskTextWidth = await page.locator('.task-body').first().evaluate(element => element.getBoundingClientRect().width);
+  assert.ok(taskTextWidth > 180, 'Mobile task text must keep a readable width beside or above its controls');
   assert.ok(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

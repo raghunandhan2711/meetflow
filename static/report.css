@@ -1,28 +1,29 @@
+@import url("/static/theme.css");
 body {
   font:
-    15px/1.7 system-ui,
+    15px/1.7 Arial,
     sans-serif;
-  color: #16243a;
+  color: #242b25;
   margin: 0;
-  background: #f6f8fc;
+  background: #f7f5ee;
 }
 header,
 footer {
   padding: 22px 8%;
   font-size: 11px;
   letter-spacing: 1px;
-  color: #64748b;
+  color: #687067;
 }
 header {
-  background: #10203a;
-  color: white;
+  background: #e9ecdf;
+  color: #242b25;
 }
 main {
   max-width: 1000px;
   margin: 35px auto;
   padding: 40px;
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--white);
+  border: 1px solid #dddfd4;
 }
 h1 {
   font-size: 32px;
@@ -31,11 +32,11 @@ h1 {
 h2 {
   font-size: 18px;
   margin-top: 32px;
-  color: #027aa7;
+  color: #a24929;
 }
 .date,
 .print-hint {
-  color: #64748b;
+  color: #687067;
   font-size: 12px;
 }
 pre {
@@ -52,10 +53,10 @@ td,
 th {
   padding: 10px;
   text-align: left;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #dddfd4;
 }
 th {
-  background: #f0f5fa;
+  background: #e9ecdf;
 }
 @media print {
   body {
@@ -71,7 +72,7 @@ th {
   }
   header {
     background: white;
-    color: #163152;
+    color: #242b25;
     padding: 0;
   }
   footer {
@@ -102,4 +103,20 @@ th {
   h1 {
     font-size: 25px;
   }
+}
+
+h1 {
+  font-family: var(--font-editorial);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -1px;
+}
+h2 {
+  font-weight: 500;
+}
+header {
+  border-bottom: 1px solid var(--line);
+}
+main {
+  border-radius: 6px;
 }

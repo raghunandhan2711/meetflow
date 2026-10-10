@@ -1,0 +1,22 @@
+/* Shared visual language for the public page, workspace and printable report. */
+:root {
+  --paper: #f7f5ee;
+  --white: #fffefb;
+  --ink: #242b25;
+  --muted: #687067;
+  --line: #dddfd4;
+  --orange: #f66536;
+  --accent: #b94420;
+  --forest: #242b25;
+  --sage: #e9ecdf;
+  --green: #dee9b9;
+  --warm: #f5e7db;
+  --red: #ad4038;
+  --font-body: Arial, Helvetica, sans-serif;
+  --font-editorial: Georgia, "Times New Roman", serif;
+  --radius: 6px;
+}
+::selection {
+  background: #f7b89f;
+  color: #242b25;
+}

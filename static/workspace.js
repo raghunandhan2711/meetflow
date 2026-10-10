@@ -226,7 +226,7 @@ function renderDashboard() {
     .map((height, index) => `<span class="bar-${index}"></span>`)
     .join("");
   $("#content").innerHTML =
-    `<section class="hero"><div><span class="eyebrow">MEETING INTELLIGENCE / PROJECT C3</span><h1>AI-Powered Meeting Analysis<br>&amp; Task Automation System</h1><p>Turn meeting conversations into accurate transcripts, clear decisions, and actionable work. Capture your meeting. Let the next steps take shape.</p><div class="heading-actions"><button class="button primary" data-capture="upload">${icon("upload")}Upload a meeting</button><button class="button secondary" data-capture="record">${icon("mic")}Record live</button></div></div><div class="hero-visual"><div class="visual-label"><span class="status-dot"></span>CONVERSATION → CLARITY</div><div class="waveform" aria-hidden="true">${bars}</div><div class="visual-step">${icon("check")}Transcript. Decisions. Next steps.</div></div></section><div class="quick-capture">${[
+    `<section class="hero"><div><span class="eyebrow">YOUR NEXT CHAPTER STARTS HERE</span><h1>Good conversations.<br><em>Real progress.</em></h1><p>Bring the conversation. Find the decisions. Give every next step a home. Your meeting-to-action workspace starts here.</p><div class="heading-actions"><button class="button primary" data-capture="upload">${icon("upload")}Upload a meeting</button><button class="button secondary" data-capture="record">${icon("mic")}Record a meeting</button></div></div><div class="hero-visual"><div class="capture-card-top"><span>✳ YOUR NEXT GOOD IDEA STARTS HERE</span><span class="status-dot"></span></div><h2>Bring the conversation.<br><em>We’ll help with the rest.</em></h2><p>Choose how you’d like to start.</p><div class="capture-card-options"><button data-capture="upload"><span class="capture-card-icon">${icon("upload")}</span><span><strong>Upload a recording</strong><small>Audio or video · up to 24 MB</small></span>${icon("arrow")}</button><button data-capture="record"><span class="capture-card-icon">${icon("mic")}</span><span><strong>Record your meeting</strong><small>Capture from your microphone</small></span>${icon("arrow")}</button><button data-capture="text"><span class="capture-card-icon">${icon("note")}</span><span><strong>Start with a transcript</strong><small>Paste the conversation you already have</small></span>${icon("arrow")}</button></div><div class="capture-card-foot">${icon("shield")} Local workspace. Clear next steps.</div></div></section><div class="quick-capture">${[
       ["upload", "upload", "Upload recording", "Audio or video, up to 24 MB"],
       ["record", "mic", "Record a meeting", "Capture from your microphone"],
       [
@@ -899,6 +899,17 @@ try {
   state.settings = await api("/settings");
   await refresh();
   await route();
+  const entry = new URLSearchParams(location.search);
+  if (entry.get('sample') === '1') {
+    const sample = await api('/sample', { method: 'POST' });
+    await refresh();
+    navigate('meeting/' + sample.id);
+  } else if (entry.get('capture') === 'upload') {
+    $('#new-top').click();
+  }
+  if (entry.has('sample') || entry.has('capture')) {
+    history.replaceState(null, '', location.pathname + location.hash);
+  }
 } catch (error) {
   $("#content").innerHTML =
     `<div class="error-box"><h2>Unable to open the workspace.</h2><p>${escape(error.message)} Refresh after the server is running.</p></div>`;

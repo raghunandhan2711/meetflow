@@ -4,8 +4,11 @@
   "description": "Browser verification tools for AI-Powered Meeting Analysis & Task Automation",
   "private": true,
   "scripts": {
+    "dev": "start.bat",
+    "start": "start.bat",
     "test:browser": "node tests/workspace-browser.mjs",
-    "check": "node --check static/workspace.js"
+    "check": "node --check static/workspace.js && node --check static/landing.js",
+    "test:landing": "node tests/landing-browser.mjs"
   },
   "keywords": [],
   "author": "",

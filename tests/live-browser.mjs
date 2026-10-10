@@ -36,7 +36,7 @@ try {
     (await context.request.get(base + "/api/meetings")).status(),
     401,
   );
-  await page.goto(base);
+  await page.goto(base + '/app');
   await page
     .getByRole("button", { name: "New meeting", exact: true })
     .first()

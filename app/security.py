@@ -165,9 +165,9 @@ async def guard(request: Request, call_next):
     response.headers['Referrer-Policy'] = 'same-origin'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
-    if request.url.path == '/' or request.url.path.startswith('/api/'):
+    if request.url.path in ('/', '/app') or request.url.path.startswith('/api/'):
         response.headers['Cache-Control'] = 'no-store'
-    if request.method == 'GET' and request.url.path == '/' and response.status_code == 200:
+    if request.method == 'GET' and request.url.path in ('/', '/app') and response.status_code == 200:
         if not sessions.valid(request.cookies.get(COOKIE)):
             response.set_cookie(COOKIE, sessions.issue(), max_age=SESSION_TTL, httponly=True,
                                 samesite='strict', secure=request.url.scheme == 'https')

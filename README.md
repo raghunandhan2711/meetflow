@@ -4,6 +4,19 @@
 
 ## Open the website
 
+From PowerShell or the VS Code terminal on this Windows machine:
+
+```powershell
+cd C:\Users\raghu\meeting-analysis
+npm run dev
+```
+
+This starts the local database and the website. Keep the terminal open, then visit **http://127.0.0.1:8000** for the landing page or **http://127.0.0.1:8000/app** for the workspace. Press **Ctrl+C** to stop the website. `npm start` runs the same launcher. You can also double-click `start.bat` in this folder without opening a terminal first.
+
+To open the codebase in VS Code, run `code C:\Users\raghu\meeting-analysis`, or use **File → Open Folder** and select that folder. These launch commands use the existing `.venv` and `.env`; no API keys belong in the command.
+
+If MeetFlow is already running, the launcher prints its URLs and exits successfully without starting a duplicate server. If a different program occupies port 8000, it reports the conflict without stopping that program. Stop the existing website with Ctrl+C in its original terminal when you need to restart it after configuration changes.
+
 On this machine, double-click **start.bat** and open **http://127.0.0.1:8000**. Python, the full audio dependencies, the local Whisper base model, and a project-local PostgreSQL database are already installed. The launcher starts the database automatically. Existing meeting history has been preserved.
 
 Use **New meeting** to upload audio, record your microphone, or paste a transcript. **Explore a sample** opens a clearly labeled example with summaries, decisions, speakers, and tasks. Real recordings already transcribe without an API key. Without a Groq key, the transcript remains available and the meeting displays **Transcript ready**. Configure the key later and click **Run AI analysis**.
@@ -11,6 +24,8 @@ Use **New meeting** to upload audio, record your microphone, or paste a transcri
 Credentials belong in the backend `.env`. See [API_KEYS.md](API_KEYS.md) for exact links and values. There is no service settings form in the website.
 
 ## What works
+
+The homepage at `/` introduces MeetFlow with an interactive illustrative preview, a conversation-to-plan comparison, and FAQs. `/app` opens the working workspace. The homepage's upload and sample links open the corresponding workflow directly. Run `npm run test:landing` to check the landing page interactions, mobile layouts, and app handoff.
 
 - Audio/video uploads: MP3, WAV, M4A, MP4, WebM, OGG, FLAC; up to 24 MB.
 - Browser microphone recording with timer, playback preview, and submission.
@@ -26,6 +41,10 @@ Credentials belong in the backend `.env`. See [API_KEYS.md](API_KEYS.md) for exa
 Local transcription and database storage need no API keys. Live AI analysis, gated speaker models, and Jira calls require the credentials described in the guide. Sample notes are curated content, not live AI output.
 
 ## Architecture
+
+All screens share `static/theme.css` for the cream, sage, and terracotta palette and typography. `landing.css` handles the homepage, `workspace.css` handles every workspace screen and dialog, and `report.css` applies the same visual language to printable reports.
+
+`workspace-layout.css` adapts the landing page's horizontal navigation, centered content, editorial headings, and capture card to the working application, including mobile layouts. The capture card opens the existing upload, microphone, and transcript workflows.
 
 ```mermaid
 flowchart LR

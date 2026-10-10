@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f5ee" />
+    <meta
+      name="description"
+      content="Turn meeting recordings into clear summaries, decisions and tasks. Review the evidence, assign the next step, and send it to Jira with MeetFlow."
+    />
+    <title>MeetFlow — Good conversations. Real progress.</title>
+    <link rel="icon" href="/static/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/landing.css" />
+    <script type="module" src="/static/landing.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="nav wrap">
+      <a class="brand" href="/" aria-label="MeetFlow home"
+        ><span class="brand-symbol" aria-hidden="true">m<span>f</span></span
+        >meetflow<span class="brand-period">.</span></a
+      >
+      <nav aria-label="Main navigation">
+        <a href="#how-it-works">How it works</a
+        ><a href="#in-action">In action</a><a href="#questions">FAQs</a>
+      </nav>
+      <a class="nav-cta" href="/app"
+        >Open workspace <span aria-hidden="true">↗</span></a
+      >
+    </header>
+    <main id="main">
+      <section class="hero wrap">
+        <div class="hero-copy">
+          <p class="eyebrow">
+            <span class="live-dot"></span> LESS NOTE-TAKING. MORE MOMENTUM.
+          </p>
+          <h1>
+            Great meeting.<br />Now, make<br /><span class="serif"
+              >things happen.</span
+            ><svg class="underline" viewBox="0 0 500 20" aria-hidden="true">
+              <path d="M3 13Q220 -4 493 8M130 18Q310 5 463 15" />
+            </svg>
+          </h1>
+          <p class="hero-description">
+            The ideas, the decisions, the “I’ll take care of it.”<br
+              class="desktop-break"
+            />
+            Turn your conversations into a clear next step.
+          </p>
+          <div class="hero-actions">
+            <a class="button orange" href="/app?capture=upload"
+              >Analyze your first meeting <span aria-hidden="true">↗</span></a
+            ><a class="watch-link" href="#in-action"
+              ><span class="play" aria-hidden="true">▶</span> See it in
+              action</a
+            >
+          </div>
+          <p class="microcopy">
+            Your recording. Your workspace. Your next move.
+          </p>
+        </div>
+        <div
+          class="hero-visual"
+          aria-label="Illustrative meeting analysis preview"
+        >
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="note-sticker">
+            A little less chaos.<br /><span>A lot more clarity.</span
+            ><svg viewBox="0 0 90 50" aria-hidden="true">
+              <path d="M7 6Q44 49 79 19M64 18l17-2-5 16" />
+            </svg>
+          </div>
+          <div class="recording-card">
+            <span class="record-icon" aria-hidden="true">◉</span>
+            <div>
+              <strong>Monday, made productive.</strong
+              ><span>Product sync · Recording uploaded</span>
+            </div>
+            <span class="audio-length">12:34</span>
+            <div class="waveform" aria-hidden="true"></div>
+          </div>
+          <article class="preview-card">
+            <div class="preview-top">
+              <span class="mini-brand">✳ meetflow</span
+              ><span class="ready-badge">✓ Analysis ready</span>
+            </div>
+            <div class="preview-heading">
+              <span class="eyebrow">FROM CONVERSATION TO ACTION</span>
+              <h2>The next steps.<br />Already taking shape.</h2>
+            </div>
+            <div
+              class="preview-tabs"
+              role="tablist"
+              aria-label="Meeting preview"
+            >
+              <button
+                role="tab"
+                id="tab-summary"
+                aria-selected="false"
+                aria-controls="preview-content"
+                tabindex="-1"
+                data-preview="summary"
+              >
+                Summary</button
+              ><button
+                role="tab"
+                id="tab-decisions"
+                aria-selected="false"
+                aria-controls="preview-content"
+                tabindex="-1"
+                data-preview="decisions"
+              >
+                Decisions <span>2</span></button
+              ><button
+                role="tab"
+                id="tab-tasks"
+                aria-selected="true"
+                aria-controls="preview-content"
+                data-preview="tasks"
+              >
+                Action items <span>3</span>
+              </button>
+            </div>
+            <div
+              id="preview-content"
+              role="tabpanel"
+              aria-labelledby="tab-tasks"
+              tabindex="0"
+            ></div>
+            <div class="preview-bottom">
+              <span
+                ><i class="live-dot"></i> Nothing lost in the
+                conversation.</span
+              ><span>Illustrative example</span>
+            </div>
+          </article>
+          <div class="floating-task">
+            <span class="check-circle">✓</span>
+            <div>
+              <strong>From “we should” to “done.”</strong
+              ><span
+                >Ready to review &amp; send to Jira
+                <span aria-hidden="true">↗</span></span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="tool-strip wrap" aria-label="Workflow capabilities">
+        <span
+          >ONE CONVERSATION.<br /><strong>EVERYTHING CONNECTED.</strong></span
+        >
+        <div><span aria-hidden="true">≋</span> Whisper transcription</div>
+        <div><span aria-hidden="true">✳</span> AI meeting notes</div>
+        <div>
+          <span class="jira-diamond" aria-hidden="true">◆</span> Jira tasks
+        </div>
+        <div><span aria-hidden="true">↧</span> Shareable reports</div>
+      </section>
+      <section id="how-it-works" class="how-section wrap">
+        <div class="section-heading">
+          <p class="eyebrow">THE MEETING ENDS. THE MOMENTUM DOESN’T.</p>
+          <h2>
+            Less “what did we say?”<br />More
+            <span class="serif">“here’s what’s next.”</span>
+          </h2>
+          <p>
+            Stay in the conversation. MeetFlow helps you handle the
+            follow-through.
+          </p>
+        </div>
+        <div class="steps">
+          <article>
+            <span class="step-number">01 / CAPTURE</span>
+            <div class="step-art capture-art" aria-hidden="true">
+              <span>↥</span>
+              <div>
+                <b>That’s a wrap.</b><small>Drop your meeting here</small>
+              </div>
+              <i>WAV · MP3 · MP4</i>
+            </div>
+            <h3>Bring the conversation.</h3>
+            <p>
+              Upload a recording, capture your microphone, or paste a
+              transcript. Start with what you have.
+            </p>
+          </article>
+          <article>
+            <span class="step-number">02 / UNDERSTAND</span>
+            <div class="step-art understand-art" aria-hidden="true">
+              <span>“Let’s ship the update on Friday.”</span
+              ><span>✓ Decision captured</span
+              ><span>✳ The important bits, together.</span>
+            </div>
+            <h3>Find the moments that matter.</h3>
+            <p>
+              Get a focused summary, key decisions, and action items with source
+              quotes you can check.
+            </p>
+          </article>
+          <article>
+            <span class="step-number">03 / MOVE FORWARD</span>
+            <div class="step-art action-art" aria-hidden="true">
+              <span class="avatar">AK</span>
+              <div>
+                <b>Review the launch checklist</b><small>Alex · Friday</small>
+              </div>
+              <span class="done-tag">Ready ↗</span>
+            </div>
+            <h3>Give every next step a home.</h3>
+            <p>
+              Review owners and priorities, track progress, then send tasks to
+              Jira or export your notes.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section id="in-action" class="demo-section">
+        <div class="wrap">
+          <div class="demo-heading">
+            <div>
+              <p class="eyebrow">DON’T JUST READ ABOUT IT. TRY IT.</p>
+              <h2>
+                A messy conversation.<br /><span class="serif"
+                  >A beautifully clear plan.</span
+                >
+              </h2>
+            </div>
+            <p>
+              Switch the view to see what changes.<br />This is a curated
+              example, not a live AI result.
+            </p>
+          </div>
+          <div
+            class="demo-switch"
+            role="group"
+            aria-label="Compare meeting views"
+          >
+            <button aria-pressed="true" data-view="before">
+              01 &nbsp; The conversation</button
+            ><button aria-pressed="false" data-view="after">
+              02 &nbsp; The clarity <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+          <div class="comparison" id="comparison">
+            <div class="conversation-panel">
+              <div class="panel-label">
+                <span class="live-dot"></span> PRODUCT SYNC
+                <span>03 speakers</span>
+              </div>
+              <div class="quote">
+                <span class="avatar">AK</span>
+                <div>
+                  <strong>Alex <time>02:14</time></strong>
+                  <p>
+                    Okay, let’s keep Friday as the launch date. I’ll review the
+                    checklist before then.
+                  </p>
+                </div>
+              </div>
+              <div class="quote">
+                <span class="avatar pink">PR</span>
+                <div>
+                  <strong>Priya <time>02:32</time></strong>
+                  <p>
+                    Sounds good. I’ll send the updated designs by Wednesday so
+                    we have time to check them.
+                  </p>
+                </div>
+              </div>
+              <div class="quote">
+                <span class="avatar green">JM</span>
+                <div>
+                  <strong>Jamie <time>03:08</time></strong>
+                  <p>
+                    Let’s leave the dashboard redesign for the next sprint. I’ll
+                    fix the login bug first, by Thursday.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="clarity-panel" hidden>
+              <div class="panel-label">
+                <span class="live-dot"></span> THE FOLLOW-THROUGH
+                <span>Ready for review</span>
+              </div>
+              <div class="clarity-columns">
+                <div>
+                  <span class="eyebrow">02 DECISIONS</span>
+                  <h3>A direction everyone can follow.</h3>
+                  <p>✓ Keep Friday as the launch date.</p>
+                  <p>✓ Move the dashboard redesign to the next sprint.</p>
+                </div>
+                <div>
+                  <span class="eyebrow">03 ACTION ITEMS</span>
+                  <ul class="clear-tasks">
+                    <li>
+                      <span
+                        >Review the launch checklist<small
+                          >Alex · Friday</small
+                        ></span
+                      ><span>↗</span>
+                    </li>
+                    <li>
+                      <span
+                        >Send updated designs<small
+                          >Priya · Wednesday</small
+                        ></span
+                      ><span>↗</span>
+                    </li>
+                    <li>
+                      <span
+                        >Fix the login bug<small>Jamie · Thursday</small></span
+                      ><span>↗</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="demo-footer">
+            <span>From scattered context to shared understanding.</span
+            ><a href="/app?sample=1"
+              >Explore a full sample meeting
+              <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </div>
+      </section>
+      <section class="details-section wrap">
+        <div class="section-heading">
+          <p class="eyebrow">BUILT FOR THE PART AFTER “BYE, EVERYONE.”</p>
+          <h2>
+            Small details.<br /><span class="serif"
+              >A better follow-through.</span
+            >
+          </h2>
+        </div>
+        <div class="details-grid">
+          <article>
+            <span class="detail-icon">↶</span>
+            <h3>Go back to the source.</h3>
+            <p>
+              Check the transcript and replay uploaded audio. Review the context
+              before a task becomes a commitment.
+            </p>
+          </article>
+          <article>
+            <span class="detail-icon">☷</span>
+            <h3>Your tasks. Your call.</h3>
+            <p>
+              Adjust the owner, priority, and due date. Add what’s missing and
+              track tasks from to-do to done.
+            </p>
+          </article>
+          <article>
+            <span class="detail-icon">↗</span>
+            <h3>Keep the work moving.</h3>
+            <p>
+              Send reviewed tasks to Jira. Take your notes with you as Markdown,
+              CSV, or a printable report.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section id="questions" class="faq-section wrap">
+        <div>
+          <p class="eyebrow">A FEW GOOD QUESTIONS.</p>
+          <h2>Before your<br /><span class="serif">next meeting.</span></h2>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>How do I get started?<span>+</span></summary>
+            <p>
+              Open the workspace and choose New meeting. Upload a recording,
+              record your microphone, or paste a transcript. You can also
+              explore a sample before adding your own meeting.
+            </p>
+          </details>
+          <details>
+            <summary>Does MeetFlow join my calls?<span>+</span></summary>
+            <p>
+              No. This version processes recordings after you submit them. It
+              does not join Zoom or Google Meet calls, or transcribe a meeting
+              live.
+            </p>
+          </details>
+          <details>
+            <summary>Where does my meeting data go?<span>+</span></summary>
+            <p>
+              Recordings and meeting history are stored in your local workspace.
+              Transcription runs locally with the current configuration.
+              Transcript text is sent to Groq for AI analysis; reviewed task
+              details are sent to Jira when you choose to send them.
+            </p>
+          </details>
+          <details>
+            <summary>
+              Can I check and edit the AI results?<span>+</span>
+            </summary>
+            <p>
+              Yes. Check source quotes and the transcript, edit task details,
+              correct speaker names, and add your own tasks. AI can make
+              mistakes, so review the results before acting on them.
+            </p>
+          </details>
+          <details>
+            <summary>Is this ready for my whole company?<span>+</span></summary>
+            <p>
+              This edition is a single-user college project running locally. It
+              demonstrates the complete meeting-to-action workflow. Shared
+              accounts and public hosting are not included.
+            </p>
+          </details>
+        </div>
+      </section>
+      <section class="final-cta wrap">
+        <div class="cta-spark" aria-hidden="true">✳</div>
+        <p class="eyebrow">GOOD CONVERSATIONS DESERVE A NEXT CHAPTER.</p>
+        <h2>
+          Make your next meeting<br /><span class="serif">mean something.</span>
+        </h2>
+        <a class="button dark" href="/app?capture=upload"
+          >Let’s get things moving <span aria-hidden="true">↗</span></a
+        >
+        <p>Start with a recording. Leave with a plan.</p>
+      </section>
+    </main>
+    <footer class="footer wrap">
+      <a class="brand" href="/">meetflow<span class="brand-period">.</span></a
+      ><span>Good conversations. Real progress.</span
+      ><a href="/app">Go to workspace ↗</a
+      ><small>MeetFlow · A college project in meeting intelligence.</small>
+    </footer>
+  </body>
+</html>
