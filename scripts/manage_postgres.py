@@ -80,9 +80,10 @@ def initialize():
 
 def migrate_archive():
     from sqlalchemy import create_engine, inspect, select
-    from app.database import Base, Meeting, Task
+    from app.database import Meeting, Task
+    from app.migrations import migrate
     target = create_engine(connection_url())
-    Base.metadata.create_all(target)
+    migrate(target)
     source_path = ROOT / 'data' / 'meetings.db'
     if source_path.exists():
         source = create_engine('sqlite:///'+source_path.as_posix())

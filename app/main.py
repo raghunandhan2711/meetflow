@@ -5,17 +5,29 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
 from starlette.exceptions import HTTPException as StarletteHTTPException
+import logging
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from .config import ROOT, settings
 from .lifecycle import lifespan
 from .api import router as api_router
 from .workspace import router as workspace_router
 from . import security
+from .request_limits import RequestSizeLimit
 
 STATIC_ROOT = ROOT / 'static'
 
 app = FastAPI(title='AI-Powered Meeting Analysis & Task Automation System', version='2.0.0', lifespan=lifespan,
               docs_url=None, redoc_url=None, openapi_url=None)
+app.add_middleware(RequestSizeLimit)
 app.middleware('http')(security.guard)
+
+
+@app.exception_handler(SQLAlchemyError)
+async def safe_database_error(request, exc):
+    logging.getLogger(__name__).error('Database request failed (%s); SQL and parameters withheld.', type(exc).__name__)
+    if isinstance(exc, IntegrityError):
+        return JSONResponse({'detail': 'The change conflicts with saved data. Refresh and try again.'}, status_code=409)
+    return JSONResponse({'detail': 'Database temporarily unavailable. Check PostgreSQL and retry.'}, status_code=503, headers={'Retry-After': '5'})
 
 
 @app.exception_handler(StarletteHTTPException)

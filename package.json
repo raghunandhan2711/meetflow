@@ -6,6 +6,13 @@
   "scripts": {
     "dev": "start.bat",
     "start": "start.bat",
+    "db:migrate": ".venv\\Scripts\\python.exe scripts/database.py migrate",
+    "db:status": ".venv\\Scripts\\python.exe scripts/database.py status",
+    "db:check": ".venv\\Scripts\\python.exe scripts/database.py check",
+    "db:backup": ".venv\\Scripts\\python.exe scripts/database.py backup",
+    "test:postgres": ".venv\\Scripts\\python.exe scripts/test_postgres.py",
+    "test:api": ".venv\\Scripts\\python.exe scripts/test_api.py",
+    "test:api": ".venv\\Scripts\\python.exe scripts/test_api.py",
     "test:browser": "node tests/workspace-browser.mjs",
     "check": "node --check static/workspace.js && node --check static/landing.js",
     "test:landing": "node tests/landing-browser.mjs"

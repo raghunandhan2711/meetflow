@@ -1,10 +1,12 @@
 from typing import Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, AwareDatetime
 
 
 class TranscriptInput(BaseModel):
     title: str = Field(min_length=1, max_length=180)
-    transcript: str = Field(min_length=30, max_length=80000)
+    transcript: str = Field(min_length=30, max_length=1000000)
+    description: str = Field(default='', max_length=6000)
+    meeting_at: AwareDatetime | None = None
 
 
 class ActionItem(BaseModel):

@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: minutes
       POSTGRES_USER: minutes
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-minutes}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your ignored .env}
     ports:
       - "127.0.0.1:5432:5432"
     volumes:

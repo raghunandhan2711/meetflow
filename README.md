@@ -23,6 +23,8 @@ Use **New meeting** to upload audio, record your microphone, or paste a transcri
 
 Credentials belong in the backend `.env`. See [API_KEYS.md](API_KEYS.md) for exact links and values. There is no service settings form in the website.
 
+See [docs/DATABASE.md](docs/DATABASE.md) for the PostgreSQL audit, Windows setup, schema, migrations, API endpoints, isolated tests, and backup/restore instructions.
+
 ## What works
 
 The homepage at `/` introduces MeetFlow with an interactive illustrative preview, a conversation-to-plan comparison, and FAQs. `/app` opens the working workspace. The homepage's upload and sample links open the corresponding workflow directly. Run `npm run test:landing` to check the landing page interactions, mobile layouts, and app handoff.
@@ -68,6 +70,9 @@ flowchart LR
 | `app/workspace.py`           | Meeting review, speaker correction, tasks, playback, reports                            |
 | `app/services.py`            | Transcription, diarization, Groq and Jira adapters                                      |
 | `app/database.py`            | Meeting and task models                                                                 |
+| `app/migrations.py`          | Transactional, versioned schema upgrades and migration status                           |
+| `app/records.py`             | Consistent meeting/task locking during edits and processing                             |
+| `scripts/database.py`       | Database connectivity, migration, status and backup commands                            |
 | `app/schemas.py`             | Input and AI response validation                                                        |
 | `static/workspace.js`        | Browser routing, capture, review and task interactions                                  |
 | `static/workspace.css`       | Responsive interface                                                                    |
@@ -87,20 +92,21 @@ Use Python 3.12. Run `setup.ps1` on Windows, or perform the equivalent steps:
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-audio.txt
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 .\.venv\Scripts\python.exe scripts\prepare_model.py
-.\start.bat
 ```
 
 The model preparation script downloads the official Whisper base checkpoint and tokenizer, verifies the checkpoint hash, and converts it for faster-Whisper. Downloads require internet access; subsequent transcription is local. Standard faster-Whisper Hub downloads also work when a different `WHISPER_MODEL` is selected and the Hub is reachable. Audio decoding uses PyAV's bundled libraries, so a separate system FFmpeg installation is not required for the implemented pipeline.
 
 For PostgreSQL on another machine, use an existing PostgreSQL installation or the supplied Docker Compose file:
 
+Configure `.env` using the database guide below before starting the application.
+
 ```powershell
 docker compose up -d postgres
 ```
 
-Then set `DATABASE_URL=postgresql+psycopg://minutes:minutes@localhost:5432/minutes` in `.env` and restart. Update the password in both places if changed. Fresh installations can use the SQLite default while preparing PostgreSQL. Switching arbitrary connection strings does not migrate data; the project-local initialization script specifically migrates the existing SQLite archive.
+Before starting Docker, set `POSTGRES_PASSWORD` in the ignored `.env` to a password you choose. Set `DATABASE_URL` to the matching `postgresql+psycopg://minutes:<URL-encoded-password>@127.0.0.1:5432/minutes`, then run `npm run db:migrate` and `npm run db:check`. For native Windows PostgreSQL and a limited application role, follow [the database guide](docs/DATABASE.md). The example connection string contains placeholders and must be configured before startup. Switching arbitrary connection strings does not transfer data; the project-local initialization script specifically migrates the existing SQLite archive.
 
 The Windows runtime downloaded for this machine is under `.runtime/postgres/pgsql`. If copying that runtime to another Windows machine, use `scripts/manage_postgres.py initialize` to initialize a new database and generate its credentials. Do not copy a running database folder.
 
@@ -113,11 +119,14 @@ The Windows runtime downloaded for this machine is under `.runtime/postgres/pgsq
 npm install
 npm run check
 npm run test:browser
+npm run test:landing
+npm run test:postgres
+npm run test:api
 ```
 
-The browser test starts an isolated database/server, uses Chrome and a spoken WAV fixture, and exercises upload/transcription/playback, imports, fake microphone capture, task CRUD/persistence, speaker correction, search, board, exports, reports, and mobile overflow checks. Set `CHROME_PATH` if Chrome is elsewhere. Screenshots go to `artifacts/`.
+`npm run test:api` requires the configured PostgreSQL service and a database role allowed to create disposable schemas. It runs the API and PostgreSQL integration tests without calling external AI/Jira services. `npm run test:browser` separately starts an isolated database/server, uses Chrome and a spoken WAV fixture, and exercises upload/transcription/playback, imports, fake microphone capture, task CRUD/persistence, speaker correction, search, board, exports, reports, and mobile overflow checks. Set `CHROME_PATH` if Chrome is elsewhere. Screenshots go to ignored `artifacts/`.
 
-Verified on this machine: **24 automated backend tests**, the complete browser flow, actual local speech transcription, and live Groq analysis with a synthetic transcript. Jira contracts use mocked HTTP responses; Jira delivery and gated pyannote inference are awaiting their credentials.
+Verified on this machine: **25 backend tests**, **8 isolated PostgreSQL tests**, both browser suites, and real Whisper/Groq processing persisted in PostgreSQL with identical records after a server process restart. PostgreSQL tests use disposable schemas; ordinary pytest skips those eight tests unless explicitly configured. Jira contracts use mocked HTTP responses; actual issue delivery and gated pyannote inference were not exercised by this integration.
 
 ## Privacy and request limits
 
@@ -140,6 +149,6 @@ The former Llama 3.3 model was absent from the account's available model list. T
 
 ## Scope
 
-This is a single-user local college application. The launcher binds to `127.0.0.1`. Recording captures the microphone and processes after submission; it is not streaming transcription or a Zoom/Meet bot. Transcript limit is 80,000 characters. Processing runs in one server process; use one Uvicorn worker. Interrupted jobs can be retried using their retained transcript or recording.
+This is a single-user local college application. The launcher binds to `127.0.0.1`. Recording captures the microphone and processes after submission; it is not streaming transcription or a Zoom/Meet bot. Transcript imports support 1,000,000 characters. Longer than 80,000 characters are saved in full but require shortening before the existing AI analysis can run; no transcript is silently truncated. Processing runs in one server process; use one Uvicorn worker. Interrupted jobs can be retried using their retained transcript or recording. The database stores the current summary with generation metadata and a revision count, without a summary version archive.
 
 Before public hosting, add authentication, per-user permissions, a durable job queue, and deployment configuration. `.env`, recordings, databases and local runtimes are excluded from source control.

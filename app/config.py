@@ -8,6 +8,10 @@ ROOT = Path(__file__).resolve().parent.parent
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=ROOT / '.env', extra='ignore')
     database_url: str = Field(default='sqlite:///./data/meetings.db', repr=False, exclude=True)
+    db_pool_size: int = Field(default=5, ge=1, le=20)
+    db_max_overflow: int = Field(default=5, ge=0, le=20)
+    db_pool_timeout: int = Field(default=10, ge=1, le=60)
+    db_connect_timeout: int = Field(default=5, ge=1, le=30)
     groq_api_key: str = Field(default='', repr=False, exclude=True)
     groq_model: str = 'qwen/qwen3.8-27b'
     transcription_provider: str = 'local'

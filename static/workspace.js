@@ -130,7 +130,16 @@ function pill(meeting) {
   return `<span class="pill ${style}"><span class="status-dot"></span>${labels[meeting.status] || escape(meeting.status)}</span>`;
 }
 async function refresh() {
-  state.meetings = await api("/meetings");
+  const meetings = [];
+  const seen = new Set();
+  for (let offset = 0; ; offset += 100) {
+    const page = await api(`/meetings?limit=100&offset=${offset}`);
+    for (const meeting of page) {
+      if (!seen.has(meeting.id)) { meetings.push(meeting); seen.add(meeting.id); }
+    }
+    if (page.length < 100) break;
+  }
+  state.meetings = meetings;
   $("#meeting-count").textContent = state.meetings.length;
   $("#task-count").textContent = allTasks().filter(
     (task) => task.status !== "done",
@@ -297,7 +306,7 @@ function renderMeeting() {
   const audio = meeting.has_audio
     ? `<div class="audio-panel"><span>${icon("wave")}Meeting recording</span><audio class="audio-player" id="meeting-audio" controls preload="metadata" src="/api/meetings/${escape(meeting.id)}/audio"></audio></div>`
     : "";
-  const tabs = `<div class="detail-tabs" role="tablist" aria-label="Meeting views">${[
+  const tabs = `${meeting.status === "ready" && meeting.source !== "sample" ? '<div class="action-toolbar"><button class="text-button" data-action="regenerate">Regenerate analysis ↻</button></div>' : ""}<div class="detail-tabs" role="tablist" aria-label="Meeting views">${[
     ["overview", "Overview"],
     ["transcript", "Transcript"],
     ["actions", "Action items"],
@@ -557,6 +566,12 @@ document.addEventListener("click", async (event) => {
       const sample = await api("/sample", { method: "POST" });
       await refresh();
       navigate("meeting/" + sample.id);
+    }
+    if (button.dataset.action === "regenerate") {
+      confirmAction("Regenerate analysis", "Replace the current AI summary and unreviewed suggestions? Reviewed tasks and Jira links will be kept.", async () => {
+        await api("/meetings/" + state.meeting.id + "/regenerate", { method: "POST" });
+        await refreshView();
+      });
     }
     if (button.dataset.action === "retry") {
       button.disabled = true;

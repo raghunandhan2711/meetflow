@@ -1,0 +1,42 @@
+-- Frozen baseline. Existing installations are adopted without replacing tables.
+CREATE TABLE IF NOT EXISTS meetings (
+ id VARCHAR(36) PRIMARY KEY,
+ title VARCHAR(180) NOT NULL,
+ created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ status VARCHAR(30) NOT NULL DEFAULT 'queued',
+ source VARCHAR(30) NOT NULL DEFAULT 'transcript',
+ transcript TEXT NOT NULL DEFAULT '',
+ segments JSON NOT NULL DEFAULT '[]',
+ summary TEXT NOT NULL DEFAULT '',
+ decisions JSON NOT NULL DEFAULT '[]',
+ topics JSON NOT NULL DEFAULT '[]',
+ error TEXT NOT NULL DEFAULT '',
+ duration DOUBLE PRECISION NOT NULL DEFAULT 0,
+ audio_file VARCHAR(100) NOT NULL DEFAULT '',
+ original_filename VARCHAR(250) NOT NULL DEFAULT '',
+ CONSTRAINT ck_meetings_status CHECK (status IN ('queued','transcribing','analyzing','transcribed','ready','failed')),
+ CONSTRAINT ck_meetings_source CHECK (source IN ('transcript','audio','sample')),
+ CONSTRAINT ck_meetings_title CHECK (length(trim(title)) > 0),
+ CONSTRAINT ck_meetings_duration CHECK (duration >= 0)
+);
+CREATE TABLE IF NOT EXISTS tasks (
+ id VARCHAR(36) PRIMARY KEY,
+ meeting_id VARCHAR(36) NOT NULL REFERENCES meetings(id) ON DELETE NO ACTION,
+ position INTEGER NOT NULL DEFAULT 0,
+ origin VARCHAR(20) NOT NULL DEFAULT 'ai',
+ title VARCHAR(240) NOT NULL,
+ description TEXT NOT NULL DEFAULT '',
+ owner VARCHAR(120) NOT NULL DEFAULT 'Unassigned',
+ due_date VARCHAR(50) NOT NULL DEFAULT '',
+ priority VARCHAR(20) NOT NULL DEFAULT 'medium',
+ feature VARCHAR(120) NOT NULL DEFAULT '',
+ evidence TEXT NOT NULL DEFAULT '',
+ status VARCHAR(20) NOT NULL DEFAULT 'open',
+ jira_key VARCHAR(50) NOT NULL DEFAULT '',
+ jira_status VARCHAR(20) NOT NULL DEFAULT 'not_sent',
+ CONSTRAINT ck_tasks_status CHECK (status IN ('open','in_progress','done')),
+ CONSTRAINT ck_tasks_priority CHECK (priority IN ('low','medium','high')),
+ CONSTRAINT ck_tasks_origin CHECK (origin IN ('ai','manual')),
+ CONSTRAINT ck_tasks_jira_status CHECK (jira_status IN ('not_sent','sending','sent','uncertain')),
+ CONSTRAINT ck_tasks_title CHECK (length(trim(title)) > 0)
+);

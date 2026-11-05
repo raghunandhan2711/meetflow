@@ -124,3 +124,10 @@ def test_speaker_alignment_uses_overlap():
     segments = [{'start':0,'end':3},{'start':4,'end':8},{'start':12,'end':13}]
     aligned = services.align_speakers(segments,[(0,4,'Speaker 1'),(4,9,'Speaker 2')])
     assert [s['speaker'] for s in aligned] == ['Speaker 1','Speaker 2','Unknown']
+
+
+def test_request_size_limits_before_parsing(client):
+    response = client.post('/api/meetings', content=b'x', headers={'Content-Length': str(5 * 1024 * 1024), 'Content-Type':'application/json'})
+    assert response.status_code == 413
+    response = client.post('/api/meetings', content=iter([b'x' * (1024 * 1024)] * 5), headers={'Content-Type':'application/json'})
+    assert response.status_code == 413

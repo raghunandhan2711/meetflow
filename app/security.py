@@ -145,14 +145,14 @@ async def guard(request: Request, call_next):
         origin = request.headers.get('origin')
         if request.headers.get('sec-fetch-site') == 'cross-site' or (origin and origin != str(request.base_url).rstrip('/')):
             response = JSONResponse({'detail': 'Cross-origin requests are not allowed.'}, status_code=403)
-        elif request.url.path != '/api/health' and not sessions.valid(request.cookies.get(COOKIE)):
+        elif request.url.path not in ('/api/health', '/api/health/live') and not sessions.valid(request.cookies.get(COOKIE)):
             response = JSONResponse({'detail': 'Open or refresh the website to start a private session.'}, status_code=401)
         else:
             client = request.client.host
             rules = [(f'api:{client}', settings.rate_limit_api_per_minute, 60)]
             if request.method not in ('GET', 'HEAD', 'OPTIONS'):
                 rules.append((f'writes:{client}', settings.rate_limit_writes_per_minute, 60))
-                if request.url.path in ('/api/meetings', '/api/upload') or request.url.path.endswith('/retry'):
+                if request.url.path in ('/api/meetings', '/api/upload') or request.url.path.endswith(('/retry', '/regenerate')):
                     rules.extend([(f'jobs-minute:{client}', settings.rate_limit_analyses_per_minute, 60),
                                   (f'jobs-hour:{client}', settings.rate_limit_analyses_per_hour, 3600)])
             retry = api_limiter.admit(rules)

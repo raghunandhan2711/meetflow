@@ -1,16 +1,20 @@
 """HTTP endpoints for meeting capture, search, analysis, and Jira delivery."""
 from pathlib import Path
+from typing import Literal
 from uuid import uuid4
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, BackgroundTasks
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, BackgroundTasks, Query
 from fastapi.responses import Response
-from sqlalchemy import select, update, or_
+from sqlalchemy import select, update, or_, text
+from sqlalchemy.orm import selectinload, defer
+from sqlalchemy.exc import SQLAlchemyError
 from .config import ROOT, settings
-from .database import Session, Meeting, Task
+from .database import Session, Meeting, Task, utcnow
 from .schemas import TranscriptInput, TaskUpdate
 from .sample import sample_meeting
 from .pipeline import process_meeting, ACTIVE
 from .serialization import task_dict, meeting_dict
 from . import services, security
+from .records import locked_meeting, locked_task
 
 router = APIRouter()
 MAX_UPLOAD = 24 * 1024 * 1024
@@ -18,9 +22,18 @@ MAX_UPLOAD = 24 * 1024 * 1024
 
 @router.get('/api/health')
 def health():
-    with Session() as db:
-        db.execute(select(1))
-    return {'status': 'ok'}
+    try:
+        with Session() as db:
+            db.execute(select(1))
+        return {'status': 'ok', 'application': 'ok', 'database': 'ok'}
+    except SQLAlchemyError:
+        from fastapi.responses import JSONResponse
+        return JSONResponse({'status': 'degraded', 'application': 'ok', 'database': 'unavailable'}, status_code=503)
+
+
+@router.get('/api/health/live')
+def liveness():
+    return {'status': 'ok', 'application': 'ok'}
 
 
 @router.get('/api/settings')
@@ -29,9 +42,9 @@ def configuration():
 
 
 @router.get('/api/meetings')
-def meetings(q: str = ''):
+def meetings(q: str = Query(default='', max_length=200), limit: int = Query(default=100, ge=1, le=100), offset: int = Query(default=0, ge=0)):
     with Session() as db:
-        stmt = select(Meeting).order_by(Meeting.created_at.desc())
+        stmt = select(Meeting).options(selectinload(Meeting.tasks), defer(Meeting.transcript)).order_by(Meeting.created_at.desc(), Meeting.id.desc()).limit(limit).offset(offset)
         if q:
             needle = '%' + q[:200].replace('%', '\\%').replace('_', '\\_') + '%'
             stmt = stmt.where(or_(Meeting.title.ilike(needle, escape='\\'), Meeting.transcript.ilike(needle, escape='\\'), Meeting.summary.ilike(needle, escape='\\')))
@@ -47,9 +60,26 @@ def meeting(meeting_id: str):
         return meeting_dict(m)
 
 
+@router.get('/api/tasks')
+def tasks(meeting_id: str | None = None, status: Literal['open', 'in_progress', 'done'] | None = None,
+          owner: str | None = Query(default=None, max_length=120),
+          limit: int = Query(default=100, ge=1, le=100), offset: int = Query(default=0, ge=0)):
+    with Session() as db:
+        statement = select(Task).order_by(Task.created_at.desc(), Task.id.desc()).limit(limit).offset(offset)
+        if meeting_id:
+            statement = statement.where(Task.meeting_id == meeting_id)
+        if status:
+            statement = statement.where(Task.status == status)
+        if owner:
+            statement = statement.where(Task.owner == owner)
+        return [task_dict(task) for task in db.scalars(statement)]
+
+
 @router.post('/api/sample', status_code=201)
 def create_sample():
     with Session() as db:
+        if db.bind.dialect.name == 'postgresql':
+            db.execute(text('SELECT pg_advisory_xact_lock(742019302)'))
         m = db.scalar(select(Meeting).where(Meeting.source == 'sample'))
         if not m:
             m = sample_meeting()
@@ -63,7 +93,7 @@ def create_meeting(body: TranscriptInput, background: BackgroundTasks):
     if not body.title.strip() or len(body.transcript.strip()) < 30:
         raise HTTPException(422, 'Enter a title and at least 30 characters of transcript.')
     with Session() as db:
-        m = Meeting(title=security.redact(body.title.strip()), transcript=security.redact(body.transcript.strip()))
+        m = Meeting(title=security.redact(body.title.strip()), transcript=security.redact(body.transcript.strip()), description=security.redact(body.description), meeting_at=body.meeting_at, transcript_created_at=utcnow())
         db.add(m)
         db.commit()
         background.add_task(process_meeting, m.id)
@@ -104,15 +134,25 @@ async def upload(background: BackgroundTasks, title: str = Form(...), audio: Upl
 
 @router.post('/api/meetings/{meeting_id}/retry', status_code=202)
 def retry(meeting_id: str, background: BackgroundTasks):
+    return queue_analysis(meeting_id, background)
+
+
+@router.post('/api/meetings/{meeting_id}/regenerate', status_code=202)
+def regenerate(meeting_id: str, background: BackgroundTasks):
+    return queue_analysis(meeting_id, background, regenerate=True)
+
+
+def queue_analysis(meeting_id, background, regenerate=False):
     with Session() as db:
-        m = db.get(Meeting, meeting_id)
-        if not m:
-            raise HTTPException(404, 'Meeting not found.')
-        if m.status not in ('failed', 'transcribed') or not (m.transcript or m.audio_file):
+        m = locked_meeting(db, meeting_id)
+        allowed = ('ready',) if regenerate else ('failed', 'transcribed')
+        if m.status not in allowed or not (m.transcript or m.audio_file):
             raise HTTPException(409, 'This meeting cannot be processed again in its current state.')
         if m.transcript and not settings.groq_api_key:
             raise HTTPException(409, 'AI analysis is waiting for the Groq API credential. Your transcript is saved.')
-        result = db.execute(update(Meeting).where(Meeting.id == meeting_id, Meeting.status.in_(['failed', 'transcribed'])).values(status='queued', error=''))
+        if any(t.jira_status == 'sending' for t in m.tasks):
+            raise HTTPException(409, 'Wait for Jira delivery to finish.')
+        result = db.execute(update(Meeting).where(Meeting.id == meeting_id, Meeting.status.in_(allowed)).values(status='queued', error=''))
         if result.rowcount != 1:
             raise HTTPException(409, 'This meeting is already processing.')
         db.commit()
@@ -123,9 +163,7 @@ def retry(meeting_id: str, background: BackgroundTasks):
 @router.patch('/api/tasks/{task_id}')
 def edit_task(task_id: str, body: TaskUpdate):
     with Session() as db:
-        t = db.get(Task, task_id)
-        if not t:
-            raise HTTPException(404, 'Task not found.')
+        t = locked_task(db, task_id)
         changes = body.model_dump(exclude_unset=True, exclude_none=True)
         if 'title' in changes:
             changes['title'] = changes['title'].strip()
@@ -135,6 +173,8 @@ def edit_task(task_id: str, body: TaskUpdate):
             raise HTTPException(409, 'Edit this task in Jira after it has been sent.')
         for key, value in changes.items():
             setattr(t, key, security.redact(value))
+        if changes:
+            t.origin = 'manual'
         db.commit()
         return task_dict(t)
 
@@ -142,9 +182,7 @@ def edit_task(task_id: str, body: TaskUpdate):
 @router.post('/api/tasks/{task_id}/jira')
 def send_to_jira(task_id: str):
     with Session() as db:
-        t = db.get(Task, task_id)
-        if not t:
-            raise HTTPException(404, 'Task not found.')
+        t = locked_task(db, task_id)
         if t.jira_key:
             return task_dict(t)
         if not settings.jira_ready:

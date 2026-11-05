@@ -5,18 +5,21 @@ import io
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, AwareDatetime
 from .config import ROOT
 from .database import Session, Meeting, Task
 from .schemas import ActionItem
 from .security import redact
 from .pipeline import ACTIVE
+from .records import locked_meeting, locked_task
 
 router = APIRouter(prefix='/api')
 
 
 class MeetingEdit(BaseModel):
-    title: str = Field(min_length=1, max_length=180)
+    title: str | None = Field(default=None, min_length=1, max_length=180)
+    description: str | None = Field(default=None, max_length=6000)
+    meeting_at: AwareDatetime | None = None
 
 
 class SpeakerEdit(BaseModel):
@@ -38,11 +41,14 @@ def require_idle(meeting):
 
 @router.patch('/meetings/{meeting_id}')
 def rename_meeting(meeting_id: str, body: MeetingEdit):
-    if not body.title.strip():
+    if body.title is not None and not body.title.strip():
         raise HTTPException(422, 'Enter a meeting title.')
     with Session() as db:
-        meeting = get_meeting(db, meeting_id)
-        meeting.title = redact(body.title.strip())
+        meeting = locked_meeting(db, meeting_id)
+        changes = body.model_dump(exclude_unset=True)
+        for name, value in changes.items():
+            if value is not None or name == 'meeting_at':
+                setattr(meeting, name, redact(value.strip()) if isinstance(value, str) else value)
         db.commit()
     return {'status': 'saved'}
 
@@ -66,7 +72,7 @@ def rename_speaker(meeting_id: str, body: SpeakerEdit):
     if not name or '\n' in name or ':' in name:
         raise HTTPException(422, 'Enter a name without a colon or line break.')
     with Session() as db:
-        meeting = get_meeting(db, meeting_id)
+        meeting = locked_meeting(db, meeting_id)
         require_idle(meeting)
         if not any(s.get('speaker') == body.speaker for s in meeting.segments):
             raise HTTPException(404, 'Speaker not found in this transcript.')
@@ -84,7 +90,7 @@ def rename_speaker(meeting_id: str, body: SpeakerEdit):
 @router.post('/meetings/{meeting_id}/tasks', status_code=201)
 def add_task(meeting_id: str, body: ActionItem):
     with Session() as db:
-        meeting = get_meeting(db, meeting_id)
+        meeting = locked_meeting(db, meeting_id)
         require_idle(meeting)
         if not body.title.strip():
             raise HTTPException(422, 'Enter a task title.')
@@ -97,9 +103,7 @@ def add_task(meeting_id: str, body: ActionItem):
 @router.delete('/tasks/{task_id}')
 def delete_task(task_id: str):
     with Session() as db:
-        task = db.get(Task, task_id)
-        if not task:
-            raise HTTPException(404, 'Task not found.')
+        task = locked_task(db, task_id)
         if task.jira_status != 'not_sent':
             raise HTTPException(409, 'Keep linked tasks for traceability. Manage the issue in Jira.')
         db.delete(task)
@@ -110,7 +114,7 @@ def delete_task(task_id: str):
 @router.delete('/meetings/{meeting_id}')
 def delete_meeting(meeting_id: str):
     with Session() as db:
-        meeting = get_meeting(db, meeting_id)
+        meeting = locked_meeting(db, meeting_id)
         require_idle(meeting)
         if any(t.jira_status == 'sending' for t in meeting.tasks):
             raise HTTPException(409, 'Wait for Jira delivery to finish.')
